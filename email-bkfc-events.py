@@ -9,13 +9,13 @@ from bs4 import BeautifulSoupv
 load_dotenv()
 
 #password = os.getenv("SECRET")
-
+os.getegid("EMAIL_ADDRESS")
 
 def send_email(event_details):
-    from_email = "wschmidt22@gmail.com"
-    reply_to_email = "wschmidt22@gmail.com"
+    from_email = os.getegid("EMAIL_ADDRESS")
+    reply_to_email = os.getegid("EMAIL_ADDRESS")
     password = os.getenv("SECRET")
-    to_email = "wschmidt22@gmail.com"
+    to_email = os.getegid("EMAIL_ADDRESS")
 
     subject = "BKFC Event Notifications"
     body_template = """
