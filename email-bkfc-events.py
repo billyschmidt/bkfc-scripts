@@ -4,53 +4,54 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import requests
-from bs4 import BeautifulSoupv
+from bs4 import BeautifulSoup
 
+# Load environment variables
 load_dotenv()
 
-#password = os.getenv("SECRET")
-os.getegid("EMAIL_ADDRESS")
+# Get email credentials from environment variables
+email_address = os.getenv("EMAIL_ADDRESS")
+email_password = os.getenv("SECRET")
 
 def send_email(event_details):
-    from_email = os.getegid("EMAIL_ADDRESS")
-    reply_to_email = os.getegid("EMAIL_ADDRESS")
-    password = os.getenv("SECRET")
-    to_email = os.getegid("EMAIL_ADDRESS")
+    from_email = email_address
+    reply_to_email = email_address
+    to_email = email_address
 
     subject = "BKFC Event Notifications"
     body_template = """
     <html>
     <head>
         <style>
-            .container {
+            .container {{
                 font-family: Arial, sans-serif;
                 color: #333;
                 margin: 20px;
-            }
-            h2 {
+            }}
+            h2 {{
                 color: #D32F2F;
                 text-align: center;
-            }
-            .event {
+            }}
+            .event {{
                 border: 1px solid #ccc;
                 padding: 10px;
                 margin-bottom: 15px;
                 border-radius: 5px;
                 background-color: #f9f9f9;
-            }
-            .title {
+            }}
+            .title {{
                 font-weight: bold;
                 color: #007BFF;
                 font-size: 18px;
-            }
-            .date, .location {
+            }}
+            .date, .location {{
                 color: #555;
                 font-size: 14px;
-            }
-            .separator {
+            }}
+            .separator {{
                 border-top: 1px solid #ddd;
                 margin: 10px 0;
-            }
+            }}
         </style>
     </head>
     <body>
@@ -75,12 +76,7 @@ def send_email(event_details):
         """
 
     # Insert the event HTML into the body
-    # Insert the event HTML into the body
-    try:
-        body = body_template.format(event_html=event_html)
-    except KeyError as e:
-        print(f"Formatting error: {e}")
-        return
+    body = body_template.format(event_html=event_html)
 
     msg = MIMEMultipart()
     msg['From'] = from_email
@@ -92,7 +88,7 @@ def send_email(event_details):
     try:
         # Use SMTP_SSL instead of SMTP for port 465
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.login(from_email, password)
+        server.login(from_email, email_password)
         server.send_message(msg)
         server.quit()
         print("Email sent successfully!")
