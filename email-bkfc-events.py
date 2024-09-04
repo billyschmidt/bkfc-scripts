@@ -5,13 +5,32 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import requests
 from bs4 import BeautifulSoup
+import urllib.parse
 
 # Load environment variables
 load_dotenv()
 
 # Get email credentials from environment variables
 email_address = os.getenv("EMAIL_ADDRESS")
-email_password = os.getenv("SECRET")
+password = os.getenv("SECRET")
+
+def create_google_calendar_link(event):
+    title = urllib.parse.quote(event['title'])
+    date = event['date'].replace(', ', '').replace(' ', '').replace('.', '')
+    location = urllib.parse.quote(event['location'])
+
+    # Format the date for all-day events
+    start_date = date
+    end_date = date
+
+    link = (
+        f"https://www.google.com/calendar/render?action=TEMPLATE"
+        f"&text={title}"
+        f"&dates={start_date}/{end_date}"
+        f"&location={location}"
+        f"&sf=true&output=xml"
+    )
+    return link
 
 def send_email(event_details):
     from_email = email_address
@@ -48,6 +67,9 @@ def send_email(event_details):
                 color: #555;
                 font-size: 14px;
             }}
+            .calendar-link {{
+                margin-top: 10px;
+            }}
             .separator {{
                 border-top: 1px solid #ddd;
                 margin: 10px 0;
@@ -66,17 +88,23 @@ def send_email(event_details):
     # Generate the HTML content for each event
     event_html = ""
     for event in event_details:
+        calendar_link = create_google_calendar_link(event)
         event_html += f"""
         <div class="event">
             <div class="title">{event['title']}</div>
             <div class="date"><strong>Date:</strong> {event['date']}</div>
             <div class="location"><strong>Location:</strong> {event['location']}</div>
+            <div class="calendar-link"><a href="{calendar_link}" target="_blank">Add to Google Calendar</a></div>
         </div>
         <div class="separator"></div>
         """
 
     # Insert the event HTML into the body
-    body = body_template.format(event_html=event_html)
+    try:
+        body = body_template.format(event_html=event_html)
+    except KeyError as e:
+        print(f"Formatting error: {e}")
+        return
 
     msg = MIMEMultipart()
     msg['From'] = from_email
@@ -88,7 +116,7 @@ def send_email(event_details):
     try:
         # Use SMTP_SSL instead of SMTP for port 465
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.login(from_email, email_password)
+        server.login(from_email, password)
         server.send_message(msg)
         server.quit()
         print("Email sent successfully!")
